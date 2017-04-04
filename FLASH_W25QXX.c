@@ -38,6 +38,9 @@ void FLASH_W25QXX_Enable_Reset(void)
 	//WAIT FOR THE FLASH TO BE FREE
 	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
 	
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
+		
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_ENABLE_RESET);
 }
 
@@ -48,6 +51,9 @@ void FLASH_W25QXX_Do_Reset(void)
 	//WAIT FOR THE FLASH TO BE FREE
 	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
 	
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
+		
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_RESET);
 }
 
@@ -65,6 +71,7 @@ uint8_t FLASH_W25QXX_Get_Status_Register(uint8_t register_num)
 	else if(register_num == 2)
 	{
 		(*spi_send_get_function)(FLASH_W25QXX_COMMAND_READ_STATUS_REG_2);
+		//DEASSERT CS LINE
 		(*spi_cs_high_function)();
 		return (uint8_t)(*spi_send_get_function)(FLASH_W25QXX_COMMAND_NOP);
 	}
@@ -89,6 +96,7 @@ void FLASH_W25QXX_Write_Enable(void)
 	
 	//REASSERT CS LINE
 	(*spi_cs_low_function)();
+		
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_WRITE_ENABLE);
 }
 
@@ -101,6 +109,7 @@ void FLASH_W25QXX_Write_Disable(void)
 	
 	//REASSERT CS LINE
 	(*spi_cs_low_function)();
+		
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_WRITE_DISABLE);
 }
 
@@ -193,10 +202,16 @@ uint8_t FLASH_W25QXX_Read_Data_Byte(uint32_t add)
 	return (uint8_t)(*spi_send_get_function)(FLASH_W25QXX_COMMAND_NOP);
 }
 
-/*
+
 void FLASH_W25QXX_Read_Data_Block(uint32_t add, uint8_t* data_ptr, uint32_t read_len)
 {
 	//READ A BLOCK OF DATA FROM THE SPECIFIED ADDRESS AND STORE IN THE BLOCK POINTER
+	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
 	
 	uint8_t add_hi = (uint8_t)((add & 0x00FF0000) >> 16);
 	uint8_t add_mid = (uint8_t)((add & 0x0000FF00) >> 8);
@@ -208,26 +223,35 @@ void FLASH_W25QXX_Read_Data_Block(uint32_t add, uint8_t* data_ptr, uint32_t read
 	
 	for(uint32_t i=0; i<read_len; i++)
 	{
-		(*spi_send_get_function)(FLASH_W25QXX_COMMAND_NOP);
-		data_ptr[i] =  (uint8_t)(*spi_get_function)();
+		data_ptr[i] = (uint8_t)(*spi_send_get_function)(FLASH_W25QXX_COMMAND_NOP);
 	}
-}*/
+}
 
-/*
 void FLASH_W25QXX_Write_Status_Registers(uint8_t val_stat_reg_1, uint8_t val_stat_reg_2)
 {
 	//WRITE THE SPECIFIED VALUES TO STATUS REGISTERS 1 AND 2
+	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
 	
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_WRITE_STATUS_REGS);
 	(*spi_send_get_function)(val_stat_reg_1);
 	(*spi_send_get_function)(val_stat_reg_2);
 }
-*/
 
-/*
+
 void FLASH_W25QXX_Sector_Erase_4kb(uint32_t add_sector)
 {
 	//ERASE THE SPECIFIED SECTOR (4KB)
+	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
 	
 	uint8_t add_hi = (uint8_t)((add_sector & 0x00FF0000) >> 16);
 	uint8_t add_mid = (uint8_t)((add_sector & 0x0000FF00) >> 8);
@@ -241,7 +265,13 @@ void FLASH_W25QXX_Sector_Erase_4kb(uint32_t add_sector)
 
 void FLASH_W25QXX_Block_Erase_32Kb(uint32_t add_block)
 {
-	//ERASE THE SPECFIFIED BLOCK (32KB) 
+	//ERASE THE SPECFIFIED BLOCK (32KB)
+	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
 	
 	uint8_t add_hi = (uint8_t)((add_block & 0x00FF0000) >> 16);
 	uint8_t add_mid = (uint8_t)((add_block & 0x0000FF00) >> 8);
@@ -257,6 +287,12 @@ void FLASH_W25QXX_Block_Erase_64Kb(uint32_t add_block)
 {
 	//ERASE THE SPECIFIED BLOCK (64KB)
 	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
+	
 	uint8_t add_hi = (uint8_t)((add_block & 0x00FF0000) >> 16);
 	uint8_t add_mid = (uint8_t)((add_block & 0x0000FF00) >> 8);
 	uint8_t add_lo = (uint8_t)(add_block);
@@ -271,6 +307,12 @@ void FLASH_W25QXX_Chip_Erase(void)
 {
 	//ERASE THE COMPLETE CHIP
 	
+	//WAIT FOR THE FLASH TO BE FREE
+	while(FLASH_W25QXX_Get_Busy_Status() != 0){};
+		
+	//REASSERT CS LINE
+	(*spi_cs_low_function)();
+	
 	(*spi_send_get_function)(FLASH_W25QXX_COMMAND_CHIP_ERASE);
 }
-*/
+
